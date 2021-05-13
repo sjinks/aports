@@ -1,0 +1,12 @@
+--- mongo-r4.4.5/SConstruct.orig	2021-03-31 18:15:37.000000000 +0300
++++ mongo-r4.4.5/SConstruct	2021-05-03 00:53:48.977887017 +0300
+@@ -3622,7 +3622,8 @@
+     if (conf.CheckCXXHeader( "execinfo.h" ) and
+         conf.CheckDeclaration('backtrace', includes='#include <execinfo.h>') and
+         conf.CheckDeclaration('backtrace_symbols', includes='#include <execinfo.h>') and
+-        conf.CheckDeclaration('backtrace_symbols_fd', includes='#include <execinfo.h>')):
++        conf.CheckDeclaration('backtrace_symbols_fd', includes='#include <execinfo.h>') and
++        conf.CheckFunc('backtrace')):
+ 
+         conf.env.SetConfigHeaderDefine("MONGO_CONFIG_HAVE_EXECINFO_BACKTRACE")
+ 

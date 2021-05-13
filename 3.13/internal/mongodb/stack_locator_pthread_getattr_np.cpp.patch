@@ -1,0 +1,19 @@
+--- mongo-r4.4.5/src/mongo/platform/stack_locator_pthread_getattr_np.cpp.orig	2021-03-31 18:15:37.000000000 +0300
++++ mongo-r4.4.5/src/mongo/platform/stack_locator_pthread_getattr_np.cpp	2021-05-03 00:53:48.981886978 +0300
+@@ -36,6 +36,16 @@
+ #include "mongo/util/assert_util.h"
+ #include "mongo/util/scopeguard.h"
+ 
++__attribute__((constructor))
++static void set_default_stack_size(void)
++{
++    pthread_attr_t attr;
++    invariant(pthread_attr_init(&attr) == 0);
++    invariant(pthread_attr_setstacksize(&attr, 256*1024) == 0);
++    pthread_setattr_default_np(&attr);
++    invariant(pthread_attr_destroy(&attr) == 0);
++}
++
+ namespace mongo {
+ 
+ StackLocator::StackLocator() {

@@ -1,0 +1,44 @@
+# Maintainer: Volodymyr Kolesnykov <volodymyr@wildwolf.name>
+pkgname=dirb
+pkgver=2.22
+pkgrel=0
+pkgdesc="Web content scanner"
+url=http://dirb.sourceforge.net/
+arch="all"
+license="GPL-2.0"
+makedepends="curl-dev"
+subpackages="${pkgname}-doc"
+builddir="${srcdir}/dirb222"
+flags="chmod-clean"
+
+source="
+	https://downloads.sourceforge.net/project/${pkgname}/${pkgname}/${pkgver}/${pkgname}222.tar.gz
+"
+
+unpack() {
+	default_unpack
+	cd "${srcdir}"
+	find . -type d -exec chmod 0755 "{}" \;
+	find . -type f -exec chmod a+r "{}" \;
+	chmod 0755 "${builddir}/configure"
+}
+
+build() {
+	cd "${builddir}"
+	./configure --prefix=/usr
+	make CFLAGS+=" -fcommon"
+}
+
+check() {
+	cd "${builddir}"
+	make check
+}
+
+package() {
+	make DESTDIR="${pkgdir}" install
+	mkdir -p "${pkgdir}/usr/share/doc"
+	mv "${builddir}/docs" "${pkgdir}/usr/share/doc"
+	cp -R "${builddir}/wordlists" "${pkgdir}/usr/share/dirb"
+}
+
+sha512sums="57305160b11be9d48b44ece5848a102ab7a493a7ac30a44c31339fd7ca659866521ba621dc0639dc28bf21c3b5315390b934441590dac7d5b463e68df4b80b81  dirb222.tar.gz"

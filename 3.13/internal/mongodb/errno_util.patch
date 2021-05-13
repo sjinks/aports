@@ -1,0 +1,14 @@
+--- mongo-r4.4.5/src/mongo/util/errno_util.cpp.orig	2021-03-31 18:15:37.000000000 +0300
++++ mongo-r4.4.5/src/mongo/util/errno_util.cpp	2021-05-01 01:44:03.152959840 +0300
+@@ -61,10 +61,7 @@
+     char buf[kBuflen];
+     char* msg{nullptr};
+ 
+-#if defined(__GNUC__) && defined(_GNU_SOURCE) && \
+-    (!defined(__ANDROID_API__) || !(__ANDROID_API__ <= 22)) && !defined(EMSCRIPTEN)
+-    msg = strerror_r(errNumber, buf, kBuflen);
+-#elif defined(_WIN32)
++#if defined(_WIN32)
+ 
+     LPWSTR errorText = nullptr;
+     FormatMessageW(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_ALLOCATE_BUFFER |

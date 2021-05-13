@@ -1,0 +1,10 @@
+--- mongo-r4.4.5/src/third_party/mozjs-60/platform/x86_64/linux/build/js-confdefs.h.orig        2021-05-01 01:02:53.382487643 +0300
++++ mongo-r4.4.5/src/third_party/mozjs-60/platform/x86_64/linux/build/js-confdefs.h     2021-05-01 01:03:23.454149682 +0300
+@@ -38,7 +38,6 @@
+ #define HAVE_POSIX_FADVISE 1
+ #define HAVE_POSIX_FALLOCATE 1
+ #define HAVE_POSIX_MEMALIGN 1
+-#define HAVE_PTHREAD_GETNAME_NP 1
+ #define HAVE_RES_NINIT 1
+ #define HAVE_SINCOS 1
+ #define HAVE_SSIZE_T 1

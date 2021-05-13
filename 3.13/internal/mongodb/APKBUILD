@@ -1,0 +1,116 @@
+# Maintainer: Volodymyr Kolesnykov <volodymyr@wildwolf.name>
+pkgname=mongodb
+pkgver=4.4.5
+pkgrel=0
+pkgdesc="A high-performance, open source, schema-free document-oriented database"
+url="http://www.mongodb.org"
+arch="x86_64"
+options="!check" # takes too much disk space
+license='SSPL'
+pkgusers="mongodb"
+pkggroups="mongodb"
+makedepends="scons py-setuptools py3-yaml py3-cheetah paxmark openssl-dev asio-dev pcre-dev libpcap-dev snowball-dev snappy-dev zlib-dev cyrus-sasl-dev yaml-cpp-dev curl-dev xz-dev py3-psutil libunwind-dev valgrind-dev zstd-dev"
+subpackages="${pkgname}-mongo ${pkgname}-mongos"
+
+install="$pkgname.pre-install"
+source="https://github.com/mongodb/mongo/archive/refs/tags/r${pkgver}.tar.gz
+	dns_query_posix-impl.h.patch
+	errno_util.patch
+	processinfo_linux.patch
+	pthread_getname_np.patch
+	SConstruct.patch
+	stack_locator_pthread_getattr_np.cpp.patch
+	wiredtiger.patch
+	mongodb.confd
+	mongodb.initd
+	mongodb.logrotate
+	mongos.confd
+	mongos.initd
+	"
+
+builddir="${srcdir}/mongo-r${pkgver}"
+_buildopts="
+	--allocator=system \
+	--disable-warnings-as-errors \
+	--use-system-pcre \
+	--use-system-stemmer \
+	--use-system-snappy \
+	--use-system-zlib \
+	--use-system-yaml \
+	--use-sasl-client \
+	--use-system-libunwind \
+	--use-system-valgrind \
+	--use-system-zstd \
+	--ssl \
+	--install-mode=legacy \
+	--opt=size \
+	MONGO_VERSION=${pkgver} \
+	"
+
+build() {
+	cd "${builddir}"
+	export SCONSFLAGS="${MAKEFLAGS}"
+	scons ${_buildopts} --prefix="${pkgdir}/usr" core
+}
+
+check() {
+	cd "${builddir}"
+
+	export SCONSFLAGS="${MAKEFLAGS}"
+	scons ${_buildopts} unittests
+	python buildscripts/resmoke.py --suites=unittests --jobs=2
+}
+
+package() {
+	cd "${builddir}"
+
+	export SCONSFLAGS="${MAKEFLAGS}"
+	scons ${_buildopts} --prefix="${pkgdir}/usr" install
+
+	paxmark -m "${pkgdir}/usr/bin/mongod"
+
+	install -dm700 "${pkgdir}/var/lib/mongodb"
+	install -dm755 "${pkgdir}/var/log/mongodb"
+	chown mongodb:mongodb "${pkgdir}/var/lib/mongodb" "${pkgdir}/var/log/mongodb"
+
+	install -Dm755 "${srcdir}/mongodb.initd" "${pkgdir}/etc/init.d/mongodb"
+	install -Dm644 "${srcdir}/mongodb.confd" "${pkgdir}/etc/conf.d/mongodb"
+	install -Dm644 "${srcdir}/mongodb.logrotate" "${pkgdir}/etc/logrotate.d/mongodb"
+
+	rm -f "${pkgdir}/usr/bin/install_compass"
+}
+
+mongo() {
+	pkgdesc="${pkgname} - MongoDB shell"
+	install -d "${subpkgdir}/usr/bin"
+	mv "${pkgdir}/usr/bin/mongo" "${subpkgdir}/usr/bin/"
+
+	paxmark -m "${subpkgdir}/usr/bin/mongo"
+}
+
+mongos() {
+	pkgdesc="${pkgname} - the interface between the client applications and the sharded cluster"
+	install -d "${subpkgdir}/usr/bin"
+	mv "${pkgdir}/usr/bin/mongos" "${subpkgdir}/usr/bin/"
+
+	paxmark -m "${subpkgdir}/usr/bin/mongos"
+
+	install -Dm755 "${srcdir}/mongos.initd" "${pkgdir}/etc/init.d/mongos"
+	install -Dm644 "${srcdir}/mongos.confd" "${pkgdir}/etc/conf.d/mongos"
+}
+
+sha512sums="
+6b67b8742aadb550ac065654cea8e855de6c8e2381cd7c75e55d1db63b014f3afdba0f754d0c4d69207e43aa835195ae5e05f40128790941d03813dd44558b32  r4.4.5.tar.gz
+dfd5ae923b0e523c48420480cb5cffe23a082749599b18e7ba2ee12e9a8581a23d6f86955f0f73cea1fa7ce1d7703b9e9fccb073d83e7b56ce1277df6b38ee8f  dns_query_posix-impl.h.patch
+37d93a9d0b3abff9c8749b30c422d3720df6cfc459d757642408215f3d9c801294c3ce7c9f623b8ea2329364e867a63a977e027de64c3453dfb3d6ce2ae021a2  errno_util.patch
+9f110dcedb30d3b547102a33c9cf892aa2b3433878fb14e460de4438f5b8e0586c7a1f714089a74d2694897f4d24eb987da9df0fc4f5f9e26c032419336fe5da  processinfo_linux.patch
+65e7b7243fcfc7a02caad8d489c0c853d1d5a327d8deaec700286dd61caba21cb174049f619f8aecce96b75eeffcc35312179cfe0fb4b6e98dc15b3051a81bb7  pthread_getname_np.patch
+5e0753189f8e60fc3b583f19365208acff3287f5cdcd30e19749c858e69ec47098341907a1e43991acae644aaa0485bfcb0203ad89e84f9a820e32bff822045f  SConstruct.patch
+d527441f6d670654935ff941b0ca37db0eb1a4b948bc5d23b0a633dbd7d5cf39eb0b794db7a7eea84ab99522520590a6068b9cae6428c09363848ce9c64e5114  stack_locator_pthread_getattr_np.cpp.patch
+cd3fcd59d4478ab18af618c2f169066e6afcda068f61404eddad445bda165fb3f9358f1e439d4be824a6bc583122cfee8a1edd66c3857ff083ed31eaae034e93  wiredtiger.patch
+9bcd870742c31bf25f34188ddc3c414de1103e9860dea9f54eee276b89bc2cf1226abab1749c5cda6a6fb0880e541373754e5e83d63cc7189d4b9c274fd555c3  mongodb.confd
+74009794d566dd9d70ec93ffd95c830ee4696165574ecf87398165637fb40799b38d182ef54c50fd0772d589be94ade7f7a49247f3d31c1f012cb4e44cc9f5df  mongodb.initd
+8c089b1a11f494e4148fb4646265964c925bf937633a65e395ee1361d42facf837871dd493a9a2e0f480ae0e0829dbd3ed60794c5334e2716332e131fc5c2c51  mongodb.logrotate
+61d8734cef644187eeadc821c89e63a3fbf61860fe2db6e74557b1c6760fe83ba7549cb04f9e3aacea4d8e7e4d81a3b1bc0d5e29715eca33c4761adb17ea9ab7  mongos.confd
+13aad7247b848ac58b2bc0b40a0d30d909e950380abd0c83fab0e2a394a42dc268a66dac53cf9feec6971739977470082cc4339cca827f41044cfe43803ef3f7  mongos.initd
+"

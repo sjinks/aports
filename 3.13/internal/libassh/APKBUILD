@@ -1,0 +1,30 @@
+# Maintainer: Volodymyr Kolesnykov <volodymyr@wildwolf.name>
+pkgname=libassh
+pkgver=1.0.0
+pkgrel=0
+_realver=${pkgver%.[0-9]}
+pkgdesc="A free software library written in C that implements the Secure Shell protocol version 2"
+options=""
+url="http://www.nongnu.org/libassh/"
+arch="all"
+license="LGPL-2.1-or-later"
+depends_dev="openssl-dev zlib-dev libgcrypt-dev libsodium-dev"
+makedepends="${depends_dev}"
+subpackages="${pkgname}-static ${pkgname}-dev"
+source="http://download.savannah.nongnu.org/releases/${pkgname}/${pkgname}-${_realver}.tar.gz"
+builddir="${srcdir}/${pkgname}-${_realver}"
+
+build() {
+	./configure --prefix=/usr --disable-examples --disable-dependency-tracking
+	make
+}
+
+check() {
+	make -C "${builddir}" check
+}
+
+package() {
+	make -C "${builddir}" DESTDIR="${pkgdir}" install
+}
+
+sha512sums="6305d5593fd2208c98e4c675594c02d25d1acac12a1b639a59025fd1264fc3d1582c2f9a5d6eda2caa8da7d5bc4ce680f3bbcb993affe0155b16773e2c4d67a1  libassh-1.0.tar.gz"

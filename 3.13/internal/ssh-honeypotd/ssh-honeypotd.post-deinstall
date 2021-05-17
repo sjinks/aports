@@ -1,0 +1,4 @@
+#!/bin/sh
+
+deluser sshhoneypotd > /dev/null
+exit 0

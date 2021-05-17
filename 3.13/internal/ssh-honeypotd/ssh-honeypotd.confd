@@ -1,0 +1,8 @@
+#
+# Specify daemon options here.
+#
+
+ENABLED=0
+DAEMON_ARGS="-p 22 -b 0.0.0.0"
+DAEMON_USER=sshhoneypotd
+DAEMON_GROUP=sshhoneypotd

@@ -1,0 +1,37 @@
+# Maintainer: Volodymyr Kolesnykov <volodymyr@wildwolf.name>
+pkgname=ssh-honeypotd
+pkgver=2.1.2
+pkgrel=0
+pkgdesc="Low interaction SSH honeypot"
+url="https://github.com/sjinks/ssh-honeypotd"
+arch="all"
+license="MIT"
+makedepends="libssh-dev"
+subpackages=""
+builddir="${srcdir}/${pkgname}-${pkgver}/"
+install="${pkgname}.post-install ${pkgname}.post-deinstall"
+source="
+	${pkgname}-${pkgver}.tar.gz::https://github.com/sjinks/${pkgname}/archive/refs/tags/${pkgver}.tar.gz
+	${pkgname}.initd
+	${pkgname}.confd
+"
+
+build() {
+	make -C "${builddir}"
+}
+
+check() {
+	cd "${builddir}" || return 1
+	./ssh-honeypotd -v
+}
+
+package() {
+	cd "${builddir}" || return 1
+	install -D -m 0755 ssh-honeypotd "${pkgdir}/usr/sbin/ssh-honeypotd"
+	install -D -m 0644 LICENSE "${pkgdir}/usr/share/licenses/${pkgname}/COPYING"
+	install -D -m 0755 "${srcdir}/${pkgname}.initd" "${pkgdir}/etc/init.d/${pkgname}"
+	install -D -m 0644 "${srcdir}/${pkgname}.confd" "${pkgdir}/etc/conf.d/${pkgname}"
+}
+sha512sums="5ca6a7f16fb18cf68c9ac1183260ca8c16798f2324feae8325f3e6dd2b31a749767b3a77eef79dbf8f17e1a3ed16998cbf846af76fedd82abe060c0363db6dba  ssh-honeypotd-2.1.2.tar.gz
+abd7c219a6e424a88393900e3ca7d99690917e40a13ea4e5b2c2ae1510cfc8e900ad82e3ced50d6c23463961bd61a6a853003fd502d853782844f49415236e11  ssh-honeypotd.initd
+eb59b71b0b7e0fdb58d33582ae628f4d614e4c5bb04cc7bcc2beeee8f3834e084180bb3526d5b236fa2095e92ca678a5ccd8bba61a75361e66a949dfdafe57cd  ssh-honeypotd.confd"
